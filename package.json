@@ -10,8 +10,8 @@
 		"doc": "docs"
 	},
 	"scripts": {
-		"build": "rollup -c --bundleConfigAsCjs",
-		"build-es": "rollup es/index.js --file build/pedigreejs.es.v4.0.0-rc1.js --format es --plugin 'rollup-plugin-postcss={extract: true, minimize: true}'",
+		"build": "rollup -c rollup.config.js --bundleConfigAsCjs",
+		"build-es": "rollup -c rollup.config.es.js --bundleConfigAsCjs",
 		"server": "python -m http.server 8001",
 		"browserlist": "npx browserslist@latest --update-db",
 		"test": "npx jasmine-browser-runner serve",
