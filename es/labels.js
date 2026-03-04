@@ -76,7 +76,7 @@ function get_text(d, arr) {
 				txt += this_label.replace('_bc_pathology', '').toUpperCase()
 				txt += (r === 'P' ? '+ ' : (r === 'N' ? '- ' : ' '));
 			} else {
-			  txt += d.data[this_label];
+				txt += d.data[this_label];
 			}
 		}
 	}
