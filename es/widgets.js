@@ -705,7 +705,7 @@ export function addpartner(opts, dataset, name) {
 	let partner = addsibling(dataset, tree_node.data, tree_node.data.sex === 'F' ? 'M' : 'F', tree_node.data.sex === 'F' ^ (tree_node.data.parent_node && tree_node.data.parent_node.length >0) );
 	partner.noparents = true;
 
-	let child = {"name": utils.makeid(4), "sex": "M"};
+	let child = {"name": utils.makeid(4), "sex": "F"};
 	child.mother = (tree_node.data.sex === 'F' ? tree_node.data.name : partner.name);
 	child.father = (tree_node.data.sex === 'F' ? partner.name : tree_node.data.name);
 
