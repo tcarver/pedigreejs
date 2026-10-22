@@ -16,31 +16,32 @@ export function addButtons(options) {
 		btn_target: 'pedigree_history'
     }, options );
 
-	let btns1 = [   {"fa": "fa-file-image", "title": "download PNG image"},
-					{"fa": "fa-undo", "title": "undo"},
-					{"fa": "fa-redo", "title": "redo"},
-					{"fa": "fa-refresh", "title": "reset"}];
-	let btns2 = [{"fa": "fa-crosshairs", "title": "scale-to-fit"}];
+	let btns1 = [   {"fa": "fa-file-image", "title": "download PNG image", "label": "Download PNG image"},
+					{"fa": "fa-undo", "title": "undo", "label": "Undo"},
+					{"fa": "fa-redo", "title": "redo", "label": "Redo"},
+					{"fa": "fa-refresh", "title": "reset", "label": "Reset pedigree"}];
+	let btns2 = [{"fa": "fa-crosshairs", "title": "scale-to-fit", "label": "Scale to fit"}];
 
 	if(opts.zoomSrc && (opts.zoomSrc.indexOf('button') > -1)) {
 		if(opts.zoomOut !== 1)
-			btns2.push({"fa": "fa-minus-circle", "title": "zoom-out"});
+			btns2.push({"fa": "fa-minus-circle", "title": "zoom-out", "label": "Zoom out"});
 		if(opts.zoomIn !== 1)
-			btns2.push({"fa": "fa-plus-circle", "title": "zoom-in"});
+			btns2.push({"fa": "fa-plus-circle", "title": "zoom-in", "label": "Zoom in"});
 	}
-	btns2.push({"fa": "fa-arrows-alt", "title": "fullscreen"});
+	btns2.push({"fa": "fa-arrows-alt", "title": "fullscreen", "label": "Full screen"});
 
+	// icon classes are set on the button so existing selectors (e.g. '.fa-undo') still apply
 	let btns = [btns1, btns2];
+	let groups = ["Pedigree history", "Zoom"];
 	let lis = "";
 	for(let i=0; i<btns.length; i++) {
 		let b = btns[i];
-		lis += '<span class="btnm">';
+		lis += '<span class="btnm" role="group" aria-label="'+ groups[i] + '">';
 		for(let j=0; j<b.length; j++) {
-			lis += '<span>';
-			lis += '<i class="fa fa-lg ' + b[j].fa + ' me-1" aria-hidden="true" title="'+ b[j].title + '"' +
-			(b[j].fa === "fa-arrows-alt" ? 'id="fullscreen" ' : '') +
-			'></i>';
-			lis += '</span>';
+			lis += '<span class="fa fa-lg ' + b[j].fa + ' me-1" role="button" tabindex="0" title="'+ b[j].title + '"' +
+			' aria-label="'+ b[j].label + '"' +
+			(b[j].fa === "fa-arrows-alt" ? ' id="fullscreen"' : '') +
+			'></span>';
 		}
 		lis += '</span>';
 	}
@@ -93,6 +94,18 @@ function addPbuttonEvents(opts) {
 		timeoutId = setInterval(($( this ).hasClass( "fa-plus-circle" ) ? zoomIn : zoomOut), 50);
 	}).on('mouseup mouseleave', function() {
 		clearInterval(timeoutId);
+	}).on('click', function(e) {
+		// keyboard activation (Enter/Space) has no mousedown so zoom one step
+		if(e.detail === 0)
+			btn_zoom(opts, ($( this ).hasClass( "fa-plus-circle" ) ? 1.05 : 0.95));
+	});
+
+	// keyboard activation of span buttons (Enter/Space)
+	$( "#"+opts.btn_target ).on('keydown', '[role="button"]', function(e) {
+		if(e.key === 'Enter' || e.key === ' ') {
+			e.preventDefault();		// stop Space scrolling the page
+			this.click();
+		}
 	});
 
 	// undo/redo/reset
@@ -192,12 +205,12 @@ export function updateButtons(opts) {
 	let nstore = pedcache.nstore(opts);
 	let id = "#"+opts.btn_target;
 	if(nstore <= current)
-		$(id+" .fa-redo").addClass('fg-grey');
+		$(id+" .fa-redo").addClass('fg-grey').attr('aria-disabled', 'true');
 	else
-		$(id+" .fa-redo").removeClass('fg-grey');
+		$(id+" .fa-redo").removeClass('fg-grey').attr('aria-disabled', 'false');
 
 	if(current > 1)
-		$(id+" .fa-undo").removeClass('fg-grey');
+		$(id+" .fa-undo").removeClass('fg-grey').attr('aria-disabled', 'false');
 	else
-		$(id+" .fa-undo").addClass('fg-grey');
+		$(id+" .fa-undo").addClass('fg-grey').attr('aria-disabled', 'true');
 }
