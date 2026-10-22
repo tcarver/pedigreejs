@@ -3,9 +3,10 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>pedigreejs - Example 6: Example pedigree validation</title>
 	
-		<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
+	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="../build/pedigreejs.v5.0.2.min.css" />
 
@@ -14,49 +15,7 @@
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 	<script src="../build/pedigreejs.v5.0.2.min.js"></script>
 
-	<style>
-		body {
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
-		}
-		
-		#ped {text-align:center;}
-		.btn {
-		color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
-		}
-		pre {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
-		}
-		#history_ex6 {
-			padding: 10px;
-		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
-		}
-	</style>
+	<link rel="stylesheet" href="css/site.css" />
 
 
 	<script type="text/javascript">
@@ -120,31 +79,67 @@
 </head>
 <body>
 
-<div class="text-center">
-	<h2>Example 6</h2>
-	<label class="btn">
-		<input id="load" type="file" style="display: none;"/>Load
-	</label>	
-	<label class="btn">
-		<input id="save" type="button" style="display: none;"/>Save
-	</label>
-	<label class="btn">
-		<input id="print" type="button" style="display: none;"/>Print
-	</label>
-	<label class="btn">
-		<input id="svg_download" type="button" style="display: none;"/>SVG
-	</label>
-	<div id='history_ex6'></div>
-	<div id="ped"></div>
-	<div id="node_properties"></div>
-</div>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-<div class="container">
-<br>
+<!-- NAV -->
+<nav class="nav">
+	<div class="container">
+		<a class="brand" href="../index.html"><i class="fa fa-sitemap" aria-hidden="true"></i>pedigreejs</a>
+		<div class="nav-links">
+			<a href="../index.html#overview">Overview</a>
+			<a href="demo.html">Demo</a>
+			<a class="active" href="../index.html#examples">Examples</a>
+			<a href="../index.html#options">Options</a>
+			<a href="developer.html">Developer docs</a>
+		</div>
+		<a class="btn btn-dark" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs" target="_blank"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+	</div>
+</nav>
+
+<!-- HEADER -->
+<header class="hero">
+	<div class="container">
+		<p class="eyebrow">Example 6 of 9</p>
+		<h1>Example pedigree validation</h1>
+	</div>
+</header>
+
+<main class="container" id="main">
+	<div class="editor card overlap">
+		<div class="toolbar">
+			<label class="btn">
+				<input id="load" class="visually-hidden" type="file"/><i class="fa fa-folder-open" aria-hidden="true"></i>Load
+			</label>
+			<button type="button" class="btn" id="save"><i class="fa fa-floppy-disk" aria-hidden="true"></i>Save</button>
+			<button type="button" class="btn" id="print"><i class="fa fa-print" aria-hidden="true"></i>Print</button>
+			<button type="button" class="btn" id="svg_download"><i class="fa fa-download" aria-hidden="true"></i>SVG</button>
+		</div>
+		<div id="history_ex6" class="history"></div>
+		<div id="ped" class="pedigree"></div>
+		<div id="node_properties"></div>
+	</div>
+
+	<section class="content card">
+		<h2>About this example</h2>
 <p>An example validation function that checks both parents are defined:</p>
-<pre style="overflow: auto;word-wrap: normal;" id="validate"></pre>
-<p>This function can be passed to pedigreejs as the 'validate' configuration option:</p> 
-<pre style="overflow: auto;word-wrap: normal;" id="opts"></pre>
-</div>
+<pre class="options" id="validate"></pre>
+<p>This function can be passed to pedigreejs as the 'validate' configuration option:</p>
+<pre class="options" id="opts"></pre>
+	</section>
 
+	<nav class="pager" aria-label="Examples">
+		<a class="prev" href="example5.html"><i class="fa fa-arrow-left" aria-hidden="true"></i>Example 5</a>
+		<a class="all" href="../index.html#examples"><i class="fa fa-table-cells-large" aria-hidden="true"></i>All examples</a>
+		<a class="next" href="example7.html">Example 7<i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+	</nav>
+</main>
+
+<footer class="footer">
+	<div class="container">
+		<h2>Publication</h2>
+		<p><strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
+		Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
+		<i>Bioinformatics</i> <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank">doi:10.1093/bioinformatics/btx705</a></p>
+	</div>
+</footer>
 </body>

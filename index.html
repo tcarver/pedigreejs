@@ -3,7 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>pedigreejs - a web tool for building and displaying pedigrees</title>
 
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css">
@@ -17,127 +18,308 @@
  	<script src="build/pedigreejs.v5.0.2.min.js"></script>
 
 	<style>
-		a[href^="http://"][target=_blank]:after,
-		a[href^="https://"][target=_blank]:after,
-		a[href^="ftp://"][target=_blank]:after {
-		  content: "\f08e";
-		  font-family: FontAwesome;
-		  font-weight: normal;
-		  font-style: normal;
-		  display: inline-block;
-		  text-decoration: none;
-		  padding: 0px 2px;
-		  display:inline;
+		:root {
+			--ink: #1f2933;
+			--muted: #52606d;
+			--line: #e4e7eb;
+			--surface: #ffffff;
+			--canvas: #f5f7fa;
+			--brand: #2563eb;
+			--brand-dark: #1e40af;
+			--accent: #f68f35;
+			--code-bg: #0f172a;
+			--code-ink: #e2e8f0;
+			--radius: 10px;
+			--shadow: 0 1px 2px rgba(15, 23, 42, .06), 0 8px 24px rgba(15, 23, 42, .08);
 		}
 
-		.fa-rotate-45 {
-			-webkit-transform:rotate(45deg);
-			-moz-transform:rotate(45deg);
-			-ms-transform:rotate(45deg);
-			-o-transform:rotate(45deg);
-			transform:rotate(45deg);
-		}
+		* { box-sizing: border-box; }
 
-		.header {
-			background-color:#DDD1C1;
-			margin-right: auto;
-    		margin-left: auto;
-    		margin-bottom: 20px;
-		}
-
-		.btn.btn-primary {
-			color: #fff;
-		    background-color: #337ab7;
-		    border-color: #2e6da4;
-		    padding: 10px 16px;
-		    font-size: 18px;
-		    line-height: 1.3333333;
-		    border-radius: 6px;
-		    text-decoration: none;
-		}
-
-		.row {
-			display: flex;
-		}
-
-		.row > div {
-			margin-right: 10px;
-		}
-
-		.left {
-			width:180px;
-			font-weight: bold;
-			text-align: right;
-			flex-shrink: 0;
-		}
-
-		/* Clear floats after the columns */
-		.row:after {
-		  content: "";
-		  display: table;
-		  clear: both;
-		}
-
-		@media screen and (min-width: 768px) {
-			.header {
-		    	padding-top: 20px;
-		    	padding-bottom: 20px;
-		  	}
-		  	.header h1 {
-			    font-size: 63px;
-			    font-weight: 500;
-    			line-height: 1.1;
-    			margin: 10px 0;
-			}
-			.header h2 {
-			    font-size: 30px;
-			    margin-top: 20px;
-    			margin-bottom: 10px;
-    			font-weight: 500;
-			}
+		html { scroll-padding-top: 72px; }
+		@media (prefers-reduced-motion: no-preference) {
+			html { scroll-behavior: smooth; }
 		}
 
 		body {
 			margin: 0;
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
+			font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+			font-size: 15px;
+			line-height: 1.6;
+			color: var(--ink);
+			background-color: var(--canvas);
 		}
 
-		#ped {text-align:center;}
+		a { color: var(--brand); text-decoration: none; }
+		a:hover { text-decoration: underline; }
+		p a, li a, .opt a, .note a, .footer a { text-decoration: underline; text-underline-offset: 2px; }
+		.examples a, .toc a { text-decoration: none; }
+		:focus-visible { outline: 3px solid var(--brand); outline-offset: 2px; }
+		.skip-link {
+			position: absolute;
+			left: 16px;
+			top: -48px;
+			z-index: 100;
+			padding: 8px 14px;
+			background: var(--ink);
+			color: #fff;
+			border-radius: 8px;
+		}
+		.skip-link:focus { top: 8px; }
+		.visually-hidden {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			padding: 0;
+			margin: -1px;
+			overflow: hidden;
+			clip: rect(0, 0, 0, 0);
+			white-space: nowrap;
+			border: 0;
+		}
+
+		a[href^="http://"][target=_blank]::after,
+		a[href^="https://"][target=_blank]::after {
+			content: "\2197" / " (opens in new tab)";
+			font-size: .8em;
+			padding-left: 2px;
+		}
+		a.btn[target=_blank]::after { content: none; }
+
+		.fa-rotate-45 { transform: rotate(45deg); }
+
+		.container {
+			width: 100%;
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 0 16px;
+		}
+
+		/* NAV */
+		.nav {
+			position: sticky;
+			top: 0;
+			z-index: 50;
+			background: rgba(255, 255, 255, .9);
+			backdrop-filter: saturate(180%) blur(8px);
+			border-bottom: 1px solid var(--line);
+		}
+		.nav .container {
+			display: flex;
+			align-items: center;
+			gap: 24px;
+			height: 56px;
+		}
+		.brand {
+			font-weight: 700;
+			font-size: 18px;
+			color: var(--ink);
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+		.brand:hover { text-decoration: none; }
+		.brand i { color: var(--accent); }
+		.nav-links {
+			display: flex;
+			gap: 20px;
+			margin-right: auto;
+		}
+		.nav-links a { color: var(--muted); font-size: 14px; font-weight: 500; }
+		.nav-links a:hover { color: var(--ink); text-decoration: none; }
+
+		/* HERO */
+		.hero {
+			background: linear-gradient(135deg, #7c2d12 0%, #9a3412 50%, #c2410c 100%);
+			color: #fff;
+			padding: 56px 0 64px;
+		}
+		.hero h1 {
+			font-size: clamp(36px, 6vw, 56px);
+			line-height: 1.1;
+			font-weight: 800;
+			letter-spacing: -.02em;
+			margin: 0 0 12px;
+		}
+		.hero p {
+			font-size: clamp(16px, 2.2vw, 20px);
+			margin: 0 0 28px;
+			color: #fff;
+		}
+		.hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+
+		/* BUTTONS */
 		.btn {
-			color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
+			display: inline-flex;
+			align-items: center;
+			gap: 6px;
+			padding: 7px 14px;
+			font: inherit;
+			font-size: 14px;
+			font-weight: 500;
+			color: var(--ink);
+			background: var(--surface);
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			cursor: pointer;
+			transition: background-color .15s, border-color .15s, box-shadow .15s;
 		}
-		.options {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
+		label.btn:focus-within { outline: 3px solid var(--brand); outline-offset: 2px; }
+		.btn:hover { background: var(--canvas); border-color: #cbd2d9; text-decoration: none; }
+		.btn i { color: var(--muted); }
+		.btn-lg { padding: 11px 20px; font-size: 16px; border-radius: 10px; }
+		.btn-light { background: #fff; color: #9a3412; border-color: #fff; }
+		.btn-light:hover { background: #fff7ed; border-color: #fff7ed; }
+		.btn-ghost { background: transparent; color: #fff; border-color: rgba(255, 255, 255, .5); }
+		.btn-ghost:hover { background: rgba(255, 255, 255, .12); border-color: #fff; }
+		.btn-dark { background: var(--ink); color: #fff; border-color: var(--ink); }
+		.btn-dark:hover { background: #323f4b; border-color: #323f4b; }
+		.btn-dark i, .btn-light i, .btn-ghost i { color: inherit; }
+
+		/* LAYOUT */
+		.intro {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			gap: 32px;
+			align-items: start;
+			margin-top: -40px;
+		}
+		.card {
+			background: var(--surface);
+			border: 1px solid var(--line);
+			border-radius: var(--radius);
+			box-shadow: var(--shadow);
+		}
+		.intro-text { padding: 28px 32px; }
+		.intro-text h2:first-child { margin-top: 0; }
+
+		.editor { padding: 16px; position: sticky; top: 72px; }
+		.editor-title {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			margin: 0 0 12px;
 			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
+			font-weight: 600;
+			text-transform: uppercase;
+			letter-spacing: .06em;
+			color: var(--muted);
 		}
-		#pedigree_history {
-			padding: 10px;
+		.toolbar { display: flex; flex-wrap: wrap; gap: 6px; }
+		.toolbar .btn { margin: 0; }
+		.toolbar-export {
+			border-top: 1px solid var(--line);
+			margin-top: 12px;
+			padding-top: 12px;
 		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
+		#pedigree_history { padding: 10px 0; text-align: center; }
+		#pedigree { text-align: center; }
+
+		.examples {
+			list-style: none;
+			padding: 0;
+			margin: 16px 0 0;
+			display: grid;
+			grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+			gap: 10px;
+		}
+		.examples a {
+			display: flex;
+			gap: 10px;
+			height: 100%;
+			padding: 12px 14px;
+			border: 1px solid var(--line);
+			border-radius: 8px;
+			color: var(--ink);
+			font-size: 14px;
+			line-height: 1.4;
+			transition: border-color .15s, box-shadow .15s;
+		}
+		.examples a:hover { border-color: var(--brand); box-shadow: 0 0 0 3px rgba(37, 99, 235, .12); text-decoration: none; }
+		.examples .num {
+			flex-shrink: 0;
+			width: 24px;
+			height: 24px;
+			border-radius: 6px;
+			background: #eef2ff;
+			color: var(--brand-dark);
+			font-weight: 700;
+			font-size: 12px;
+			display: grid;
+			place-items: center;
+		}
+
+		/* SECTIONS */
+		.section { padding: 48px 0 0; }
+		.section h2, .intro-text h2 {
+			font-size: 26px;
+			line-height: 1.25;
+			font-weight: 700;
+			letter-spacing: -.01em;
+			margin: 0 0 12px;
+		}
+		.section p { max-width: 820px; color: #323f4b; }
+		.section i.fa, .section i.fa-regular, .section i.fa-solid { color: var(--brand); }
+
+		code, .opt-name {
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 13px;
+		}
+
+		.options {
+			background-color: var(--code-bg);
+			color: var(--code-ink);
+			padding: 16px 18px;
+			font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+			font-size: 13px;
+			line-height: 1.55;
+			overflow: auto;
+			word-wrap: normal;
+			border-radius: var(--radius);
+			margin: 16px 0;
+		}
+
+		/* OPTIONS REFERENCE */
+		.opts-list { overflow: hidden; }
+		.opt {
+			display: grid;
+			grid-template-columns: 220px minmax(0, 1fr);
+			gap: 24px;
+			padding: 14px 20px;
+			border-top: 1px solid var(--line);
+		}
+		.opt:first-child { border-top: 0; }
+		.opt:target { background: #fffbeb; }
+		.opt-name {
+			font-weight: 600;
+			color: var(--brand-dark);
+			padding-top: 1px;
+			overflow-wrap: anywhere;
+		}
+		.opt .options { margin: 10px 0 0; }
+		.opt ul { margin: 6px 0; padding-left: 20px; }
+
+		/* FOOTER */
+		.footer {
+			margin-top: 56px;
+			padding: 32px 0 40px;
+			border-top: 1px solid var(--line);
+			background: var(--surface);
+			color: var(--muted);
+			font-size: 14px;
+		}
+		.footer h2 { font-size: 16px; color: var(--ink); margin: 0 0 8px; }
+		.footer p { margin: 0; }
+
+		@media (max-width: 1000px) {
+			.intro { grid-template-columns: minmax(0, 1fr); margin-top: -32px; }
+			.editor { position: static; order: -1; }
+			.nav-links { display: none; }
+			.nav .container { justify-content: space-between; }
+		}
+		@media (max-width: 640px) {
+			.intro-text { padding: 20px; }
+			.opt { grid-template-columns: minmax(0, 1fr); gap: 4px; padding: 12px 16px; }
+			.hero { padding: 40px 0 56px; }
 		}
 	</style>
 
@@ -166,7 +348,7 @@
 				'targetDiv': 'pedigree',
 				'btn_target': 'pedigree_history',
 			//	'nodeclick': pedigree_form.nodeclick,
-				'width': ($(window).width() > 540 ? 500 : $(window).width()- 30),
+				'width': ($(window).width() > 1000 ? 500 : $(window).width() - 66),
 				'height': 350,
 				'symbol_size': 30,
 				'edit': true,
@@ -290,50 +472,39 @@
 
 <body>
 
-<!-- HEADER -->
-<div class="header">
+<a class="skip-link" href="#main">Skip to main content</a>
+
+<!-- NAV -->
+<nav class="nav">
 	<div class="container">
-	          <a class="btn btn-primary pull-right" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs">View on GitHub</a>
-	          <h1>pedigreejs</h1>
-	          <h2>A web tool for building and displaying pedigrees.</h2>
-	</div>
-</div>
-
-<div class="container">
-	<div>
-<!-- EXAMPLE -->
-		<div style="margin-left:20px;" class="pull-right">
-			<div class="text-center">
-				<label class="btn">
-						<input id="load" type="file" style="display: none;"/>Load
-				</label>
-				<label class="btn">
-						<input id="save" type="button" style="display: none;"/>Save
-				</label>
-
-				<label class="btn">
-						<input id="print" type="button" style="display: none;"/>Print
-				</label>
-				<label class="btn">
-						<input id="svg_download" type="button" style="display: none;"/>SVG
-				</label>
-				<label class="btn">
-						<input id="png_download" type="button" style="display: none;"/>PNG
-				</label>
-
-				<div id="pedigrees"></div>
-				<div id="node_properties"></div>
-
-				<br/>
-				<label class="btn">
-						<input id="save-boadicea" type="button" style="display: none;"/>Save (BOADICEA v4 format)
-				</label>
-				<label class="btn">
-						<input id="save-canrisk" type="button" style="display: none;"/>Save (CanRisk format)
-				</label>
-			</div>
+		<a class="brand" href="#"><i class="fa fa-sitemap" aria-hidden="true"></i>pedigreejs</a>
+		<div class="nav-links">
+			<a href="#overview">Overview</a>
+			<a href="#building">Building</a>
+			<a href="#loading">Load &amp; Save</a>
+			<a href="#config">Configuration</a>
+			<a href="#options">Options</a>
+			<a href="docs/developer.html">Developer docs</a>
 		</div>
-		<div>
+		<a class="btn btn-dark" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs" target="_blank"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+	</div>
+</nav>
+
+<!-- HEADER -->
+<header class="hero">
+	<div class="container">
+		<h1>pedigreejs</h1>
+		<p>A web tool for building and displaying pedigrees using standard pedigree nomenclature.</p>
+		<div class="hero-actions">
+			<a class="btn btn-lg btn-light" href="docs/demo.html"><i class="fa fa-play" aria-hidden="true"></i>Try the demo</a>
+			<a class="btn btn-lg btn-ghost" href="docs/developer.html"><i class="fa fa-book" aria-hidden="true"></i>Developer docs</a>
+		</div>
+	</div>
+</header>
+
+<main class="container" id="main">
+	<div class="intro">
+		<div class="intro-text card" id="overview">
 			<h2>Overview</h2>
 			<p>
 			<strong>pedigreejs</strong> is a JavaScript library used to draw family trees using
@@ -353,71 +524,97 @@
 			the <a href="docs/developer.html">developer documentation</a> for more details about setting up pedigreejs.</p>
 			<p>A demonstration page is available <a href="docs/demo.html">here</a>.
 			Other example pages and configurations are given below:</p>
-			<ul>
-				<li>Example 1: <a href="docs/example1.html">diabetes example</a></li>
-				<li>Example 2: <a href="docs/example2.html">change background, node colours and using local storage</a></li>
-				<li>Example 3: <a href="docs/example3.html">change text and node size</a></li>
-				<li>Example 4: <a href="docs/example4.html">PED file example with genotype data</a></li>
-				<li>Example 5: <a href="docs/example5.html">consanguineous partners and first and last name labels</a></li>
-				<li>Example 6: <a href="docs/example6.html">example pedigree validation</a></li>
-				<li>Example 7: <a href="docs/example7.html">twins, divorced, miscarriage, termination, stillbirth and adoption</a></li>
-				<li>Example 8: <a href="docs/example8.html">search pedigree data</a></li>
-				<li>Example 9: <a href="docs/example9.html">consanguineous partners at different levels</a></li>
+			<ul class="examples" id="examples">
+				<li><a href="docs/example1.html"><span class="num">1</span>diabetes example</a></li>
+				<li><a href="docs/example2.html"><span class="num">2</span>change background, node colours and using local storage</a></li>
+				<li><a href="docs/example3.html"><span class="num">3</span>change text and node size</a></li>
+				<li><a href="docs/example4.html"><span class="num">4</span>PED file example with genotype data</a></li>
+				<li><a href="docs/example5.html"><span class="num">5</span>consanguineous partners and first and last name labels</a></li>
+				<li><a href="docs/example6.html"><span class="num">6</span>example pedigree validation</a></li>
+				<li><a href="docs/example7.html"><span class="num">7</span>twins, divorced, miscarriage, termination, stillbirth and adoption</a></li>
+				<li><a href="docs/example8.html"><span class="num">8</span>search pedigree data</a></li>
+				<li><a href="docs/example9.html"><span class="num">9</span>consanguineous partners at different levels</a></li>
 			</ul>
 		</div>
+
+<!-- EXAMPLE -->
+		<aside class="editor card" aria-label="Pedigree editor">
+			<div class="editor-title">Live editor</div>
+			<div class="toolbar">
+				<label class="btn">
+					<input id="load" class="visually-hidden" type="file"/><i class="fa fa-folder-open" aria-hidden="true"></i>Load
+				</label>
+				<button type="button" class="btn" id="save"><i class="fa fa-floppy-disk" aria-hidden="true"></i>Save</button>
+				<button type="button" class="btn" id="print"><i class="fa fa-print" aria-hidden="true"></i>Print</button>
+				<button type="button" class="btn" id="svg_download"><i class="fa fa-download" aria-hidden="true"></i>SVG</button>
+				<button type="button" class="btn" id="png_download"><i class="fa fa-image" aria-hidden="true"></i>PNG</button>
+			</div>
+
+			<div id="pedigrees"></div>
+			<div id="node_properties"></div>
+
+			<div class="toolbar toolbar-export">
+				<button type="button" class="btn" id="save-boadicea" aria-label="Save as BOADICEA v4" title="Save as BOADICEA v4"><i class="fa fa-file-export" aria-hidden="true"></i>BOADICEA v4</button>
+				<button type="button" class="btn" id="save-canrisk" aria-label="Save as CanRisk" title="Save as CanRisk"><i class="fa fa-file-export" aria-hidden="true"></i>CanRisk</button>
+			</div>
+		</aside>
+<!-- EXAMPLE END -->
 	</div>
 
-<!-- EXAMPLE END -->
+	<section class="section" id="building">
+		<h2>Building Pedigrees</h2>
+		<p>
+		Individuals can be added to the pedigree by placing the mouse over an individual to reveal
+		the widgets used for editing and adding a
+		partner <i class="fa fa-link" aria-hidden="true"></i> (two people with at least one child),
+		parents <i class="fa fa-arrow-up" aria-hidden="true"></i>,
+		a sibling <i class="fa fa-user-plus" aria-hidden="true"></i>,
+		or a child <i class="fa fa-arrow-down" aria-hidden="true"></i>.
+		Options are given to add
+		male <i class="fa-regular fa-square" aria-hidden="true"></i>,
+		female <i class="fa-regular fa-circle" aria-hidden="true"></i>,
+		unknown  <i class="fa-regular fa-square fa-rotate-45" aria-hidden="true"></i>,
+		dizygotic (fraternal) twin <i class="fa fa-angle-up" style="font-size:1.5em" aria-hidden="true"></i>
+		or monozygotic (identical) twin <i class="fa fa-caret-up" style="font-size:1.5em" aria-hidden="true"></i>.
+		</p>
+		<p>
+		If the 'edit' parameter is set in the configuration of pedigreejs then the <i class="fa fa-cog" aria-hidden="true"></i> widget
+		is also displayed. When this widget is clicked it opens an editor dialog of the attributes associated for the individual. A default
+		editor is provided that can be overridden and customised.
+		</p>
+		<p>Half siblings can be added by creating a new partner (with <i class="fa fa-link" aria-hidden="true"></i>)
+		for the parent in common to the siblings.
+		Consanguineous partners can be created between individual's at the same or different levels in the pedigree
+		tree, <i>e.g.</i> cousins.
+		This is done by placing the mouse over one of the partners and clicking and dragging the
+		triple dashed line widget <img alt="handle" src="docs/img/handle.png"> in the direction of their new partner.
+		</p>
+		<p>
+		There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
+		'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
+		buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i>.
+		</p>
+	</section>
 
-	<h2>Building Pedigrees</h2>
-	<p>
-	Individuals can be added to the pedigree by placing the mouse over an individual to reveal
-	the widgets used for editing and adding a
-	partner <i class="fa fa-link" aria-hidden="true"></i> (two people with at least one child),
-	parents <i class="fa fa-arrow-up" aria-hidden="true"></i>,
-	a sibling <i class="fa fa-user-plus" aria-hidden="true"></i>,
-	or a child <i class="fa fa-arrow-down" aria-hidden="true"></i>.
-	Options are given to add
-	male <i class="fa fa-square-o" aria-hidden="true"></i>,
-	female <i class="fa fa-circle-o" aria-hidden="true"></i>,
-	unknown  <i class="fa fa-square-o fa-rotate-45" aria-hidden="true"></i>,
-	dizygotic (fraternal) twin <i class="fa fa-angle-up" style="font-size:1.5em" aria-hidden="true"></i>
-	or monozygotic (identical) twin <i class="fa fa-caret-up" style="font-size:1.5em" aria-hidden="true"></i>.
-	</p>
-	<p>
-	If the 'edit' parameter is set in the configuration of pedigreejs then the <i class="fa fa-cog" aria-hidden="true"></i> widget
-	is also displayed. When this widget is clicked it opens an editor dialog of the attributes associated for the individual. A default
-	editor is provided that can be overridden and customised.
-	</p>
-	<p>Half siblings can be added by creating a new partner (with <i class="fa fa-link" aria-hidden="true"></i>)
-	for the parent in common to the siblings.
-	Consanguineous partners can be created between individual's at the same or different levels in the pedigree
-	tree, <i>e.g.</i> cousins.
-	This is done by placing the mouse over one of the partners and clicking and dragging the
-	triple dashed line widget <img alt="handle" src="docs/img/handle.png"> in the direction of their new partner.
-	</p>
-	<p>
-	There are 'undo' <i class="fa fa-undo" aria-hidden="true"></i>,
-	'redo' <i class="fa fa-repeat" aria-hidden="true"></i> and 'reset' <i class="fa fa-refresh" aria-hidden="true"></i>
-	buttons at the top and a button to enable full screen editing <i class="fa fa-arrows-alt" aria-hidden="true"></i>.
-	</p>
+	<section class="section" id="loading">
+		<h2>Loading and Saving Pedigree Data</h2>
+		<p>The pedigree can be saved out and loaded back in. Support is given to loading
+		<a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank">CanRisk files</a>,
+		and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped" target="_blank">PED files</a> (see <a href="docs/example4.html">example 4</a>).</p>
+	</section>
 
-	<h2>Loading and Saving Pedigree Data</h2>
-	<p>The pedigree can be saved out and loaded back in. Support is given to loading
-	<a href="https://canrisk.atlassian.net/wiki/x/QoCjAg" target="_blank">CanRisk files</a>,
-	and <a href="https://www.cog-genomics.org/plink/1.9/formats#ped">PED files</a> (see <a href="docs/example4.html">example 4</a>).<p>
-
-	<h2 id="config">Configuration and Integration Notes</h2>
-	<p>The following parameters can be used to configure pedigreejs.
-	Please also see the <a href="docs/developer.html">developer notes</a> for more details about
-	programmatically interacting with pedigreejs.
-	The important parameter to configure is 'targetDiv' which defines the HTML div used for
-	drawing the pedigree. Default parameters are provided which are documented below.
-	There is a configuration parameter 'edit' which can take a function, so that a
-	customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
-	Alternatively if 'edit' is set to true a default dialog will be displayed showing the
-	individual's attributes.
-	</p>
+	<section class="section" id="config">
+		<h2>Configuration and Integration Notes</h2>
+		<p>The following parameters can be used to configure pedigreejs.
+		Please also see the <a href="docs/developer.html">developer notes</a> for more details about
+		programmatically interacting with pedigreejs.
+		The important parameter to configure is 'targetDiv' which defines the HTML div used for
+		drawing the pedigree. Default parameters are provided which are documented below.
+		There is a configuration parameter 'edit' which can take a function, so that a
+		customised editor can be written to view and edit an individual's attributes (e.g. name, sex).
+		Alternatively if 'edit' is set to true a default dialog will be displayed showing the
+		individual's attributes.
+		</p>
 
 <pre class="options">
 	var opts = {
@@ -448,146 +645,152 @@
 	}
 	opts = pedigreejs.pedigreejs.build(opts);
 </pre>
+	</section>
 
-	<h2>Options</h2>
-	<div class="row" id="targetDiv">
-		<div class="left">targetDiv</div>
-		<div>This is the id of the HTML div used for drawing the pedigree, <i>e.g.</i> 'pedigree_edit'.</div>
-	</div>
-	<div class="row" id="btn_target">
-		<div class="left">btn_target</div>
-		<div>This is the id of the HTML div used for the buttons, <i>e.g.</i> 'pedigree_history'.</div>
-	</div>
-	<div class="row" id="dataset">
-		<div class="left">dataset</div>
-		<div>The pedigree data to be displayed, <i>e.g.</i>
+	<section class="section" id="options">
+		<h2>Options</h2>
+		<div class="opts-list card">
+			<div class="opt" id="targetDiv">
+				<div class="opt-name">targetDiv</div>
+				<div>This is the id of the HTML div used for drawing the pedigree, <i>e.g.</i> 'pedigree_edit'.</div>
+			</div>
+			<div class="opt" id="btn_target">
+				<div class="opt-name">btn_target</div>
+				<div>This is the id of the HTML div used for the buttons, <i>e.g.</i> 'pedigree_history'.</div>
+			</div>
+			<div class="opt" id="dataset">
+				<div class="opt-name">dataset</div>
+				<div>The pedigree data to be displayed, <i>e.g.</i>
 <pre class="options">
 [ {"name": "m21", "sex": "M", "top_level": true},
   {"name": "f21", "sex": "F", "top_level": true},
   {"name": "ch1", "sex": "F", "mother": "f21", "father": "m21", "breast_cancer":  true, "proband": true}]</pre>
-    	</div>
-    </div>
-	<div class="row" id="labels">
-		<div class="left">labels</div>
-		<div>Array of attributes to display under the individual's symbol, <i>e.g.</i> labels: ['age', 'yob', 'alleles'].</div>
-	</div>
-	<div class="row" id="age_suffix">
-		<div class="left">age_suffix</div>
-		<div>Text appended to the age label, <i>e.g.</i> 'y' displays '56y'. Default 'y'.</div>
-	</div>
-	<div class="row" id="max_name_length">
-		<div class="left">max_name_length</div>
-		<div>Maximum number of characters of an individual's name to display. Longer names are truncated with '&hellip;' and the full name is shown on hover. Default 15, set to 0 for no limit.</div>
-	</div>
-	<div class="row" id="font_size">
-		<div class="left">font_size</div>
-		<div>Define the font-size of the labels, <i>e.g.</i> '0.75em' or '10px'.</div>
-	</div>
-	<div class="row" id="font_family">
-		<div class="left">font_family</div>
-		<div>Define the font-family of the labels, <i>e.g.</i> 'times'.</div>
-	</div>
-	<div class="row" id="font_weight">
-		<div class="left">font_weight</div>
-		<div>Define the font-weight of the labels, <i>e.g.</i> 400, 700.</div>
-	</div>
-	<div class="row" id="width">
-		<div class="left">width</div>
-		<div>Width of the SVG element, <i>e.g.</i> 600.</div>
-	</div>
-	<div class="row" id="height">
-		<div class="left">height</div>
-		<div>Height of the SVG element, <i>e.g.</i> 400.</div>
-    </div>
-	<div class="row" id="symbol_size">
-		<div class="left">symbol_size</div>
-		<div>Size of the nodes, <i>e.g.</i> 35.</div>
-    </div>
-    <div class="row" id="store_type">
-		<div class="left">store_type</div>
-		<div>Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
-		Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp">session</a>' browser storage.
-		Using 'session' will store the data for one session (data is lost when the browser tab is closed).
-		Using 'local' will store the data with no expiration date.
-		If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).</div>
-    </div>
-	<div class="row" id="zoomIn">
-		<div class="left">zoomIn</div>
-		<div>The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
-    </div>
-	<div class="row" id="zoomOut">
-		<div class="left">zoomOut</div>
-		<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
-    </div>
-	<div class="row" id="zoomSrc">
-		<div class="left">zoomSrc</div>
-		<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
-    </div>
-        <div class="row" id="dragNode">
-		<div class="left">dragNode</div>
-		<div>Enable dragging nodes, default true.</div>
-    </div>
-    <div class="row" id="showWidgets">
-		<div class="left">showWidgets</div>
-		<div>Show the widgets, default true.</div>
-    </div>
-	<div class="row" id="keep_proband_on_reset">
-		<div class="left">keep_proband_on_reset</div>
-		<div>Keep the proband's details when the pedigree is reset, default false.</div>
-	</div>
-	<div class="row" id="edit">
-		<div class="left">edit</div>
-		<div>Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
-    </div>
-	<div class="row" id="diseases">
-		<div class="left">diseases</div>
-		<div>Diseases, their colour representation and the label displayed before the
-		diagnosis age (<i>e.g.</i> 'breast: 55'). If 'label' is not given it is derived from
-		the 'type' (<i>e.g.</i> 'breast ca.: 55'). Default:
+				</div>
+			</div>
+			<div class="opt" id="labels">
+				<div class="opt-name">labels</div>
+				<div>Array of attributes to display under the individual's symbol, <i>e.g.</i> labels: ['age', 'yob', 'alleles'].</div>
+			</div>
+			<div class="opt" id="age_suffix">
+				<div class="opt-name">age_suffix</div>
+				<div>Text appended to the age label, <i>e.g.</i> 'y' displays '56y'. Default 'y'.</div>
+			</div>
+			<div class="opt" id="max_name_length">
+				<div class="opt-name">max_name_length</div>
+				<div>Maximum number of characters of an individual's name to display. Longer names are truncated with '&hellip;' and the full name is shown on hover. Default 15, set to 0 for no limit.</div>
+			</div>
+			<div class="opt" id="font_size">
+				<div class="opt-name">font_size</div>
+				<div>Define the font-size of the labels, <i>e.g.</i> '0.75em' or '10px'.</div>
+			</div>
+			<div class="opt" id="font_family">
+				<div class="opt-name">font_family</div>
+				<div>Define the font-family of the labels, <i>e.g.</i> 'times'.</div>
+			</div>
+			<div class="opt" id="font_weight">
+				<div class="opt-name">font_weight</div>
+				<div>Define the font-weight of the labels, <i>e.g.</i> 400, 700.</div>
+			</div>
+			<div class="opt" id="width">
+				<div class="opt-name">width</div>
+				<div>Width of the SVG element, <i>e.g.</i> 600.</div>
+			</div>
+			<div class="opt" id="height">
+				<div class="opt-name">height</div>
+				<div>Height of the SVG element, <i>e.g.</i> 400.</div>
+			</div>
+			<div class="opt" id="symbol_size">
+				<div class="opt-name">symbol_size</div>
+				<div>Size of the nodes, <i>e.g.</i> 35.</div>
+			</div>
+			<div class="opt" id="store_type">
+				<div class="opt-name">store_type</div>
+				<div>Pedigree storage (for undo, redo functions) set to 'session', 'local' or 'array'.
+				Default is '<a href="https://www.w3schools.com/html/html5_webstorage.asp">session</a>' browser storage.
+				Using 'session' will store the data for one session (data is lost when the browser tab is closed).
+				Using 'local' will store the data with no expiration date.
+				If session/local storage is not supported then it switches automatically to 'array' (JavaScript array store).</div>
+			</div>
+			<div class="opt" id="zoomIn">
+				<div class="opt-name">zoomIn</div>
+				<div>The factor by which the svg size can be scaled down to, default 1 (no zoom in).</div>
+			</div>
+			<div class="opt" id="zoomOut">
+				<div class="opt-name">zoomOut</div>
+				<div>The factor by which the svg size can be scaled up to, default 1 (no zoom out).</div>
+			</div>
+			<div class="opt" id="zoomSrc">
+				<div class="opt-name">zoomSrc</div>
+				<div>The source of zoom events, default ['wheel', 'button'] (zoom with mouse wheel and zoom buttons).</div>
+			</div>
+			<div class="opt" id="dragNode">
+				<div class="opt-name">dragNode</div>
+				<div>Enable dragging nodes, default true.</div>
+			</div>
+			<div class="opt" id="showWidgets">
+				<div class="opt-name">showWidgets</div>
+				<div>Show the widgets, default true.</div>
+			</div>
+			<div class="opt" id="keep_proband_on_reset">
+				<div class="opt-name">keep_proband_on_reset</div>
+				<div>Keep the proband's details when the pedigree is reset, default false.</div>
+			</div>
+			<div class="opt" id="edit">
+				<div class="opt-name">edit</div>
+				<div>Set to true for a button to display an individual's details (<i>e.g.</i> age, sex) in a dialog or provide a funtion to handle editing.</div>
+			</div>
+			<div class="opt" id="diseases">
+				<div class="opt-name">diseases</div>
+				<div>Diseases, their colour representation and the label displayed before the
+				diagnosis age (<i>e.g.</i> 'breast: 55'). If 'label' is not given it is derived from
+				the 'type' (<i>e.g.</i> 'breast ca.: 55'). Default:
 <pre class="options">
 [{'type': 'breast_cancer', 'colour': '#F68F35', 'label': 'breast'},
  {'type': 'breast_cancer2', 'colour': 'pink', 'label': 'breast 2'},
  {'type': 'ovarian_cancer', 'colour': '#306430', 'label': 'ovarian'},
  {'type': 'pancreatic_cancer', 'colour': '#4289BA', 'label': 'pancreatic'},
  {'type': 'prostate_cancer', 'colour': '#D5494A', 'label': 'prostate'}]</pre>
+				</div>
+			</div>
+			<div class="opt" id="background">
+				<div class="opt-name">background</div>
+				<div>SVG background colour, <i>e.g.</i> #d3d3d3.</div>
+			</div>
+			<div class="opt" id="node_background">
+				<div class="opt-name">node_background</div>
+				<div>Individual's background colour, <i>e.g.</i> #fff.</div>
+			</div>
+			<div class="opt" id="validate">
+				<div class="opt-name">validate</div>
+				<div>Pedigree data validation (default true). This can also take a validation
+				function to override the in-built validation. The in-built validation throws an error if any
+				of the following are not true:
+				<ul>
+					<li>parents, when defined, exist in the pedigree</li>
+					<li>mother is female</li>
+					<li>father is male</li>
+				</ul>
+				A warning message it sent to the console if there are any individuals that are not connected
+				(i.e. a break in the pedigree). See the <a href="docs/developer.html">developer notes</a> for
+				more details.
+				</div>
+			</div>
+			<div class="opt" id="DEBUG">
+				<div class="opt-name">DEBUG</div>
+				<div>Debug mode, <i>e.g.</i> false.</div>
+			</div>
 		</div>
-	</div>
-	<div class="row" id="background">
-		<div class="left">background</div>
-		<div>SVG background colour, <i>e.g.</i> #d3d3d3.</div>
-	</div>
-	<div class="row" id="node_background">
-		<div class="left">node_background</div>
-		<div>Individual's background colour, <i>e.g.</i> #fff.</div>
-	</div>
-	<div class="row" id="validate">
-		<div class="left">validate</div>
-		<div>Pedigree data validation (default true). This can also take a validation
-		function to override the in-built validation. The in-built validation throws an error if any
-		of the following are not true:
-		<ul>
-			<li>parents, when defined, exist in the pedigree</li>
-			<li>mother is female</li>
-			<li>father is male</li>
-		</ul>
-		A warning message it sent to the console if there are any individuals that are not connected
-		(i.e. a break in the pedigree). See the <a href="docs/developer.html">developer notes</a> for
-		more details.
-		</div>
-    </div>
-	<div class="row" id="DEBUG">
-		<div class="left">DEBUG</div>
-		<div>Debug mode, <i>e.g.</i> false.</div>
-    </div>
+	</section>
+</main>
 
-    <h2>Publication</h2>
-    <p><strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
-    Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
-    <i>Bioinformatics <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank">
-    doi:10.1093/bioinformatics/btx705</a></i></p>
-</div>
-
-<p></p>
+<footer class="footer">
+	<div class="container">
+		<h2>Publication</h2>
+		<p><strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
+		Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
+		<i>Bioinformatics</i> <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank">doi:10.1093/bioinformatics/btx705</a></p>
+	</div>
+</footer>
 </body>
 
 </html>

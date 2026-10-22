@@ -3,7 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>pedigreejs - Example 7: Twins, divorced, miscarriage, termination, stillbirth and adoption</title>
 	
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
@@ -14,49 +15,7 @@
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 	<script src="../build/pedigreejs.v5.0.2.min.js"></script>
 
-	<style>
-		body {
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
-		}
-		
-		#ped {text-align:center;}
-		.btn {
-		color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
-		}
-		#opts {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
-		}
-		#history_ex7 {
-			padding: 10px;
-		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
-		}
-	</style>
+	<link rel="stylesheet" href="css/site.css" />
 
 	<script type="text/javascript">
 	$( document ).ready(function() {
@@ -109,34 +68,72 @@
 </head>
 <body>
 
-<div class="text-center">
-	<h2>Example 7</h2>
-	<label class="btn">
-		<input id="load" type="file" style="display: none;"/>Load
-	</label>	
-	<label class="btn">
-		<input id="save" type="button" style="display: none;"/>Save
-	</label>
-	<label class="btn">
-		<input id="print" type="button" style="display: none;"/>Print
-	</label>
-	<label class="btn">
-		<input id="svg_download" type="button" style="display: none;"/>SVG
-	</label>
-	<div id='history_ex7'></div>
-	<div id="pedigrees_ex7"></div>
-	<div id="node_properties"></div>
-</div>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-<div class="container">
+<!-- NAV -->
+<nav class="nav">
+	<div class="container">
+		<a class="brand" href="../index.html"><i class="fa fa-sitemap" aria-hidden="true"></i>pedigreejs</a>
+		<div class="nav-links">
+			<a href="../index.html#overview">Overview</a>
+			<a href="demo.html">Demo</a>
+			<a class="active" href="../index.html#examples">Examples</a>
+			<a href="../index.html#options">Options</a>
+			<a href="developer.html">Developer docs</a>
+		</div>
+		<a class="btn btn-dark" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs" target="_blank"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+	</div>
+</nav>
+
+<!-- HEADER -->
+<header class="hero">
+	<div class="container">
+		<p class="eyebrow">Example 7 of 9</p>
+		<h1>Twins, divorced, miscarriage, termination, stillbirth and adoption</h1>
+	</div>
+</header>
+
+<main class="container" id="main">
+	<div class="editor card overlap">
+		<div class="toolbar">
+			<label class="btn">
+				<input id="load" class="visually-hidden" type="file"/><i class="fa fa-folder-open" aria-hidden="true"></i>Load
+			</label>
+			<button type="button" class="btn" id="save"><i class="fa fa-floppy-disk" aria-hidden="true"></i>Save</button>
+			<button type="button" class="btn" id="print"><i class="fa fa-print" aria-hidden="true"></i>Print</button>
+			<button type="button" class="btn" id="svg_download"><i class="fa fa-download" aria-hidden="true"></i>SVG</button>
+		</div>
+		<div id="history_ex7" class="history"></div>
+		<div id="pedigrees_ex7" class="pedigree"></div>
+		<div id="node_properties"></div>
+	</div>
+
+	<section class="content card">
+		<h2>About this example</h2>
 <p>More examples using <a href="https://www.ncbi.nlm.nih.gov/pubmed/7887430" target="_blank">standard pedigree nomenclature</a>:</p>
 
 <table class="table" >
-	<tr><td class="text-right">monozygotic twin</td><td><img src="img/monozygotic.png"></td><td class="text-right">dizygotic twin</td><td><img src="img/dizygotic.png"></td></tr>
-	<tr><td class="text-right">miscarriage     </td><td><img src="img/miscarriage.png"></td><td class="text-right" rowspan="3">divorced</td><td rowspan="3"><img src="img/divorce.png"></td></tr>
-	<tr><td class="text-right">termination     </td><td><img src="img/termination.png"></td></tr>
-	<tr><td class="text-right">stillbirth      </td><td><img src="img/stillbirth.png"> </td></tr>
-	<tr><td class="text-right">adopted in      </td><td><img src="img/adopted_in.png"> </td><td class="text-right">adopted out</td><td><img src="img/adopted_out.png"></td></tr>
+	<tr><td class="text-right">monozygotic twin</td><td><img src="img/monozygotic.png" alt="monozygotic twin"></td><td class="text-right">dizygotic twin</td><td><img src="img/dizygotic.png" alt="dizygotic twin"></td></tr>
+	<tr><td class="text-right">miscarriage</td><td><img src="img/miscarriage.png" alt="miscarriage"></td><td class="text-right" rowspan="3">divorced</td><td rowspan="3"><img src="img/divorce.png" alt="divorced"></td></tr>
+	<tr><td class="text-right">termination</td><td><img src="img/termination.png" alt="termination"></td></tr>
+	<tr><td class="text-right">stillbirth</td><td><img src="img/stillbirth.png" alt="stillbirth"></td></tr>
+	<tr><td class="text-right">adopted in</td><td><img src="img/adopted_in.png" alt="adopted in"></td><td class="text-right">adopted out</td><td><img src="img/adopted_out.png" alt="adopted out"></td></tr>
 </table>
-</div>
+	</section>
+
+	<nav class="pager" aria-label="Examples">
+		<a class="prev" href="example6.html"><i class="fa fa-arrow-left" aria-hidden="true"></i>Example 6</a>
+		<a class="all" href="../index.html#examples"><i class="fa fa-table-cells-large" aria-hidden="true"></i>All examples</a>
+		<a class="next" href="example8.html">Example 8<i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+	</nav>
+</main>
+
+<footer class="footer">
+	<div class="container">
+		<h2>Publication</h2>
+		<p><strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
+		Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
+		<i>Bioinformatics</i> <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank">doi:10.1093/bioinformatics/btx705</a></p>
+	</div>
+</footer>
 </body>

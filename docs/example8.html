@@ -3,7 +3,8 @@
 <head>
 	<meta charset="UTF-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<meta name="viewport" content="width=device-width,maximum-scale=2">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<title>pedigreejs - Example 8: Search pedigree data</title>
 	
 	<link href="https://code.jquery.com/ui/1.12.1/themes/cupertino/jquery-ui.min.css" rel="stylesheet" type="text/css" media="all" />
 	<link href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.3.1/css/all.min.css" rel="stylesheet" type="text/css" media="all" />
@@ -14,49 +15,7 @@
 	<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 	<script src="../build/pedigreejs.v5.0.2.min.js"></script>
 
-	<style>
-		body {
-		    font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
-		    font-size: 14px;
-		    line-height: 1.42857143;
-		    color: #333;
-		    background-color: #fff;
-		}
-		.container {
-		    width: 90%;
-		    max-width: 1140px;
-		    margin-right: auto;
-		    margin-left: auto;
-		}
-		
-		#ped {text-align:center;}
-		.btn {
-		color: #333;
-		    background-color: #fff;
-		    border: 1px solid #ccc;
-		    display: inline-block;
-		    padding: 6px 12px;
-		    cursor: pointer;
-		    margin-left: 5px;
-		    border-radius: 4px;
-		}
-		pre {
-			background-color: #F5F5F5;
-			padding: 10px;
-			border: 1px solid #ccc;
-			font-size: 13px;
-    		line-height: 1.42857143;
-			overflow: auto;word-wrap: normal;
-			border-radius: 4px;
-		}
-		#history_ex8 {
-			padding: 10px;
-		}
-		.text-center {
-			text-align: center;
-			padding: 0 20px;
-		}
-	</style>
+	<link rel="stylesheet" href="css/site.css" />
 
 	<script type="text/javascript">
 	$( document ).ready(function() {
@@ -123,56 +82,73 @@
 			}
 		}
 		
-		$('button').click(function() {
-			search_pedigree_data($('input[type="text"]').val());
+		$('#search_btn').click(function() {
+			search_pedigree_data($('#search_text').val());
 		});
 		
-		$('input[type="text"]').keypress(function(e){
+		$('#search_text').keypress(function(e){
 	        if(e.which == 13) // enter key pressed
-	        	search_pedigree_data($('input[type="text"]').val());
+	        	search_pedigree_data($('#search_text').val());
 	    });
 	});
 	</script>
 </head>
 <body>
 
+<a class="skip-link" href="#main">Skip to main content</a>
 
-<div class="text-center">
-	<h2>Example 8</h2>
+<!-- NAV -->
+<nav class="nav">
 	<div class="container">
-		<div class="row">
-		<div class="input-group col-md-4">
-			<input type="text" class="form-control" placeholder="Search for...">
-		      <span class="input-group-btn">
-		        <button class="btn btn-search, e.g. John" type="button"><i class="fa fa-search fa-fw"></i> Search</button>
-		      </span>
+		<a class="brand" href="../index.html"><i class="fa fa-sitemap" aria-hidden="true"></i>pedigreejs</a>
+		<div class="nav-links">
+			<a href="../index.html#overview">Overview</a>
+			<a href="demo.html">Demo</a>
+			<a class="active" href="../index.html#examples">Examples</a>
+			<a href="../index.html#options">Options</a>
+			<a href="developer.html">Developer docs</a>
 		</div>
+		<a class="btn btn-dark" role="button" href="https://github.com/CCGE-BOADICEA/pedigreejs" target="_blank"><i class="fa-brands fa-github" aria-hidden="true"></i>GitHub</a>
+	</div>
+</nav>
+
+<!-- HEADER -->
+<header class="hero">
+	<div class="container">
+		<p class="eyebrow">Example 8 of 9</p>
+		<h1>Search pedigree data</h1>
+	</div>
+</header>
+
+<main class="container" id="main">
+	<div class="editor card overlap">
+		<div class="search" role="search">
+			<label for="search_text" class="visually-hidden">Search pedigree data</label>
+			<input type="text" id="search_text" class="form-control" placeholder="Search for... e.g. John">
+			<button type="button" class="btn" id="search_btn"><i class="fa fa-search" aria-hidden="true"></i>Search</button>
 		</div>
+		<div id="search_result" class="search-result" aria-live="polite"></div>
+		<div id="history_ex8" class="history"></div>
+		<div id="pedigrees" class="pedigree"></div>
+		<div id="node_properties"></div>
 	</div>
 
-	<div id='search_result'></div>
-	<div id='history_ex8'></div>
-	<div id="pedigrees"></div>
-	<div id="node_properties"></div>
-</div>
-
-<div class="container">
-<br>
+	<section class="content card">
+		<h2>About this example</h2>
 <p>This example shows how a case sensitive search of the individual's attributes (<i>e.g.</i> age, name) can be implemented.
 The user can enter a search string into the 'Search for...' text area located above the pedigree.
 A more sophisticated search could be based on this for example by additionally providing 'case insensitive' and 'search and replace' options.
-When the 'Search' button is clicked or 'enter' pressed in the 'Search for...' text box the following search method is called:</p> 
-<pre>
-
+When the 'Search' button is clicked or 'enter' pressed in the 'Search for...' text box the following search method is called:</p>
+<pre class="options">
 // search pedigree data with the given search text
 function search_pedigree_data(search) {
-	var pedigree = pedigreejs_pedcache.current(opts);		// current pedigree data displayed
+	var pedigree = pedigreejs.pedigreejs_pedcache.current(opts);		// current pedigree data displayed
 	var html = "";
 	for(var p=0; p&lt;pedigree.length; p++){		// loop over each person in the pedigree
 		var found = false;
 		var attr = '';
 		$.each(pedigree[p], function(key, value) {	// loop over individual's data
-			if(search == key || search == value || 
+			if(search == key || search == value ||
 			   key.indexOf(search) !== -1 || (""+value).indexOf(search) !== -1) {
 				found = true;
 				attr += "&lt;strong>&lt;font color='red'>"+ key + ":" + value + "; " + "&lt;/font>&lt;/strong>";
@@ -191,6 +167,21 @@ function search_pedigree_data(search) {
 	}
 }
 </pre>
-</div>
+	</section>
 
+	<nav class="pager" aria-label="Examples">
+		<a class="prev" href="example7.html"><i class="fa fa-arrow-left" aria-hidden="true"></i>Example 7</a>
+		<a class="all" href="../index.html#examples"><i class="fa fa-table-cells-large" aria-hidden="true"></i>All examples</a>
+		<a class="next" href="example9.html">Example 9<i class="fa fa-arrow-right" aria-hidden="true"></i></a>
+	</nav>
+</main>
+
+<footer class="footer">
+	<div class="container">
+		<h2>Publication</h2>
+		<p><strong>pedigreejs: a web-based graphical pedigree editor</strong><br>
+		Carver T, Cunningham AP, Babb de Villiers C, Lee A, Hartley S, Tischkowitz M, et al.
+		<i>Bioinformatics</i> <a href="http://dx.doi.org/10.1093/bioinformatics/btx705" target="_blank">doi:10.1093/bioinformatics/btx705</a></p>
+	</div>
+</footer>
 </body>
